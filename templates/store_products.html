@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ store.store_name|capitalize }} - Products</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Enhanced product card styles */
+    .product-card {
+      transition: all 0.4s ease;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+      background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+      border: 1px solid rgba(239, 68, 68, 0.1);
+      position: relative;
+    }
+    
+    .product-card:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 15px 35px rgba(239, 68, 68, 0.15);
+      border-color: rgba(239, 68, 68, 0.2);
+    }
+
+    .product-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #ef4444, #dc2626);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .product-card:hover::before {
+      opacity: 1;
+    }
+
+    .product-image {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .product-image img {
+      transition: transform 0.4s ease;
+    }
+
+    .product-card:hover .product-image img {
+      transform: scale(1.1);
+    }
+
+    .price-tag {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: bold;
+      font-size: 18px;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+      position: relative;
+    }
+
+    .price-tag::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: -6px;
+      transform: translateY(-50%);
+      width: 0;
+      height: 0;
+      border-top: 6px solid transparent;
+      border-bottom: 6px solid transparent;
+      border-right: 6px solid #dc2626;
+    }
+
+    .add-to-cart-btn {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .add-to-cart-btn:hover {
+      background: linear-gradient(135deg, #dc2626, #b91c1c);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+    }
+
+    .add-to-cart-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .add-to-cart-btn:hover::before {
+      left: 100%;
+    }
+
+    .store-icon-container {
+      background: linear-gradient(135deg, #fef3c7, #fde68a, #fed7aa);
+      box-shadow: 0 6px 20px rgba(251, 191, 36, 0.3);
+    }
+
+    .description-text {
+      line-height: 1.6;
+      color: #4b5563;
+      font-size: 15px;
+      margin: 12px 0 16px 0;
+      display: -webkit-box;
+      
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      min-height: 72px;
+    }
+
+    .product-title {
+      color: #1f2937;
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      line-height: 1.3;
+    }
+
+    .empty-state {
+      background: linear-gradient(135deg, #f9fafb, #f3f4f6);
+      border: 2px dashed #d1d5db;
+      border-radius: 16px;
+      padding: 48px 24px;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-6px); }
+    }
+
+    .floating-icon {
+      animation: float 3s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body class="bg-gray-50">
+  <!-- Navigation Header -->
+  <header class="bg-red-600 text-white py-4 px-6 flex justify-between items-center shadow-lg">
+    <a href="{{ url_for('auth.customer_dashboard') }}" class="flex items-center hover:text-red-200 transition-colors">
+      <i class="fas fa-arrow-left mr-2"></i>
+      <span>Back to Stores</span>
+    </a>
+    <h1 class="text-xl font-bold">{{ store.store_name|capitalize }}</h1>
+    <div></div> <!-- Spacer -->
+  </header>
+
+  <!-- Store Info Banner -->
+  <div class="bg-white p-6 shadow-lg border-b border-gray-100">
+    <div class="max-w-7xl mx-auto">
+      <div class="flex items-center mb-4">
+        <div class="store-icon-container relative flex justify-center items-center rounded-xl w-24 h-24 mr-6">
+          <div class="relative">
+            <!-- Store Icon -->
+            <i class="fas fa-store text-red-600 text-4xl drop-shadow-lg"></i>
+            <!-- Pizza Slice Icon -->
+            <i class="fas fa-pizza-slice text-yellow-500 text-lg absolute -bottom-1 -right-2 transform rotate-[25deg] floating-icon"></i>
+          </div>
+        </div>
+
+        <div>
+          <h2 class="text-3xl font-bold text-gray-800">{{ store.store_name|capitalize }}</h2>
+          <p class="text-gray-600 flex items-center mt-2">
+            <i class="fas fa-map-marker-alt mr-2 text-red-500"></i>
+            {{ store.address.flat_no|capitalize }}, {{ store.address.street|capitalize }}, {{ store.address.city|capitalize }}
+          </p>
+        </div>
+      </div>
+      <div class="mt-6 bg-gray-50 rounded-lg p-4">
+        <h3 class="font-semibold mb-3 text-gray-800">Store Information:</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="flex items-center">
+            <i class="fas fa-user-tie mr-3 text-red-500"></i>
+            <span class="text-gray-700">Owner: {{ store.owner_name|capitalize }}</span>
+          </div>
+          <div class="flex items-center">
+            <i class="fas fa-phone mr-3 text-red-500"></i>
+            <span class="text-gray-700">{{ store.phone }}</span>
+          </div>
+          <div class="flex items-center">
+            <i class="fas fa-envelope mr-3 text-red-500"></i>
+            <span class="text-gray-700">{{ store.email }}</span>
+          </div>
+          <div class="flex items-center">
+            <i class="fas fa-city mr-3 text-red-500"></i>
+            <span class="text-gray-700">{{ store.address.city|capitalize }}, {{ store.address.state|capitalize }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Products Section -->
+  <section class="max-w-7xl mx-auto px-6 py-10">
+    <div class="flex items-center mb-8">
+      <h2 class="text-3xl font-bold text-gray-800">Our Menu</h2>
+      <i class="fas fa-utensils ml-3 text-red-500 text-2xl"></i>
+    </div>
+    
+    {% if not items %}
+      <div class="empty-state text-center py-16">
+        <i class="fas fa-pizza-slice text-6xl text-gray-300 mb-6 floating-icon"></i>
+        <h3 class="text-xl font-semibold text-gray-600 mb-2">No Menu Items Yet</h3>
+        <p class="text-gray-500">This store is preparing something delicious for you!</p>
+      </div>
+    {% endif %}
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+      {% for item in items %}
+      <div class="product-card bg-white">
+        {% if item.image %}
+        <div class="product-image">
+          <img src="data:image/png;base64,{{ item.image }}" 
+               alt="{{ item.name }}" 
+               class="w-full h-56 object-cover">
+        </div>
+        {% else %}
+        <div class="bg-gradient-to-br from-gray-100 to-gray-200 border-2 border-dashed border-gray-300 w-full h-56 flex items-center justify-center">
+          <i class="fas fa-pizza-slice text-5xl text-gray-400 floating-icon"></i>
+        </div>
+        {% endif %}
+        
+        <div class="p-6">
+          <div class="flex justify-between items-start mb-3">
+            <h3 class="product-title flex-1 mr-4">{{ item.name|capitalize }}</h3>
+            <div class="price-tag">₹{{ item.price }}</div>
+          </div>
+          
+          <p class="description-text">{{ item.description|capitalize }}</p>
+          
+          <button 
+            onclick="addToCart('{{ item._id }}', this)" 
+            class="add-to-cart-btn text-white py-3 px-6 rounded-full w-full font-semibold text-lg relative overflow-hidden"
+          >
+            <i class="fas fa-cart-plus mr-2"></i> Add to Cart
+          </button>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- Floating Cart Button -->
+  <a href="{{ url_for('auth.view_cart') }}" class="fixed bottom-8 right-8 bg-gradient-to-r from-red-600 to-red-700 text-white w-16 h-16 rounded-full flex items-center justify-center shadow-2xl hover:from-red-700 hover:to-red-800 transition-all duration-300 hover:scale-110">
+    <i class="fas fa-shopping-cart text-xl"></i>
+    <span class="cart-count absolute -top-2 -right-2 bg-yellow-500 text-white rounded-full w-7 h-7 flex items-center justify-center text-sm font-bold shadow-lg">
+      {{ session['cart']|length if session.get('cart') else 0 }}
+    </span>
+  </a>
+
+<script>
+  async function addToCart(productId, btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Adding...';
+
+    try {
+      const response = await fetch(`/add-to-cart/${productId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({})
+      });
+
+      if (!response.ok) throw new Error('Network response was not ok');
+
+      const data = await response.json();
+
+      // Update cart count badge
+      const cartCount = document.querySelector('.cart-count');
+      if (cartCount && data.cart_count !== undefined) {
+        cartCount.textContent = data.cart_count;
+        // Add a small animation to the cart button
+        cartCount.parentElement.style.transform = 'scale(1.2)';
+        setTimeout(() => {
+          cartCount.parentElement.style.transform = 'scale(1)';
+        }, 200);
+      }
+
+      // Success feedback
+      btn.innerHTML = '<i class="fas fa-check mr-2"></i> Added!';
+      btn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+      
+      setTimeout(() => {
+        btn.innerHTML = '<i class="fas fa-cart-plus mr-2"></i> Add to Cart';
+        btn.style.background = '';
+      }, 1500);
+
+    } catch (error) {
+      alert('Failed to add to cart. Please try again.');
+      console.error(error);
+      btn.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i> Try Again';
+      setTimeout(() => {
+        btn.innerHTML = '<i class="fas fa-cart-plus mr-2"></i> Add to Cart';
+      }, 2000);
+    } finally {
+      btn.disabled = false;
+    }
+  }
+</script>
+
+</body>
+</html>

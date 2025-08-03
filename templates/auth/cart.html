@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Cart</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+  <style>
+    .qty-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .qty-controls button {
+      width: 30px;
+      height: 30px;
+      font-weight: bold;
+      font-size: 18px;
+      padding: 0;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      background-color: #f8f9fa;
+      cursor: pointer;
+    }
+    .qty-controls input {
+      width: 50px;
+      text-align: center;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 4px 0;
+      font-size: 16px;
+    }
+    .address-card {
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 10px 0;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .address-card:hover, .address-card.selected {
+      border-color: #007bff;
+      background-color: #f8f9ff;
+    }
+    .bill-section {
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      padding: 20px;
+      border: 1px solid #e0e0e0;
+    }
+    .bill-row {
+      display: flex;
+      justify-content: space-between;
+      margin: 8px 0;
+      padding: 5px 0;
+    }
+    .bill-total {
+      border-top: 2px solid #007bff;
+      font-weight: bold;
+      font-size: 1.2rem;
+      color: #007bff;
+      padding-top: 10px;
+    }
+  </style>
+</head>
+<body class="bg-light">
+  <div class="container mt-5">
+    <div class="row">
+      <!-- Left Column - Cart Items -->
+      <div class="col-lg-8">
+        <h2 class="mb-4">🛒Your Cart</h2>
+
+        {% if cart %}
+          <table class="table table-bordered align-middle">
+            <thead class="table-dark">
+              <tr>
+                <th>Name</th>
+                <th>Price (₹)</th>
+                <th>Quantity</th>
+                <th>Subtotal (₹)</th>
+                <th>Remove</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in cart %}
+              <tr data-item-id="{{ item.id }}">
+                <td>{{ item.name }}</td>
+                <td>{{ item.price }}</td>
+                <td>
+                  <div class="qty-controls">
+                    <button type="button" class="btn-decrease">-</button>
+                    <input 
+                      type="number" 
+                      value="{{ item.quantity }}" 
+                      min="1" 
+                      class="qty-input"
+                    />
+                    <button type="button" class="btn-increase">+</button>
+                  </div>
+                </td>
+                <td>₹<span class="subtotal">{{ (item.price * item.quantity)|round(2) }}</span></td>
+                <td>
+                  <button type="button" class="btn btn-danger btn-remove">Remove</button>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+            <tfoot>
+              <tr>
+                <th colspan="3" class="text-end">Total</th>
+                <th>₹<span id="total-amount">{{ total|round(2) }}</span></th>
+                <th></th>
+              </tr>
+            </tfoot>
+          </table>
+
+          <!-- Delivery Address Section -->
+          <div class="card mt-4">
+            <div class="card-header">
+              <h4 class="mb-0">📍 Choose Delivery Address</h4>
+            </div>
+            <div class="card-body">
+              {% if customer and customer.address %}
+                <div class="address-card selected" onclick="selectAddress(this)">
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="address" value="default" checked>
+                    <label class="form-check-label">
+                      <strong>🏠 {{ customer.name }}</strong>
+                    </label>
+                  </div>
+                  <p class="mb-1 mt-2">
+                    {{ customer.address.flat_no }}, {{ customer.address.street }},
+                    {{ customer.address.landmark }}
+                  </p>
+                  <p class="mb-0 text-muted">
+                    {{ customer.address.city }}, {{ customer.address.state }} - {{ customer.address.pincode }}
+                  </p>
+                  <small class="text-success">✓ Default Address</small>
+                </div>
+              {% else %}
+                <div class="alert alert-warning">No address found for your profile. Please update your profile.</div>
+              {% endif %}
+              
+              <a href="{{ url_for('auth.customer_profile') }}" class="btn btn-outline-secondary mt-3">
+                <i class="fas fa-edit"></i> Edit Address
+              </a>
+            </div>
+          </div>
+        {% else %}
+          <div class="alert alert-info">Your cart is empty.</div>
+        {% endif %}
+
+        <a href="{{ url_for('auth.customer_dashboard') }}" class="btn btn-secondary mt-3">Back to Dashboard</a>
+      </div>
+
+      <!-- Right Column - Bill Summary -->
+      <div class="col-lg-4">
+        {% if cart %}
+        <div class="bill-section sticky-top" style="top: 20px;">
+          <h4 class="mb-3">📋 Bill Summary</h4>
+          
+          <div class="bill-row">
+            <span>Item Total</span>
+            <span>₹<span id="bill-subtotal">{{ total|round(2) }}</span></span>
+          </div>
+          
+         {% if total > 0 %}
+  <div class="bill-row">
+    <span>Delivery Fee</span>
+    <span>₹<span id="delivery-fee">40</span></span>
+  </div>
+
+  <div class="bill-row">
+    <span>Taxes & Charges</span>
+    <span>₹<span id="taxes">{{ (total * 0.05)|round(2) }}</span></span>
+  </div>
+
+  <div class="bill-row text-success">
+    <span>Discount Applied</span>
+    <span>-₹<span id="discount">0</span></span>
+  </div>
+
+  <hr>
+
+  <div class="bill-row bill-total">
+    <span>Grand Total</span>
+    <span>₹<span id="grand-total">{{ (total + 40 + (total * 0.05))|round(2) }}</span></span>
+  </div>
+{% else %}
+  <div class="alert alert-info mt-3">No items in cart.</div>
+{% endif %}
+
+          <div class="mt-4">
+            <div class="input-group mb-3">
+              <input type="text" class="form-control" placeholder="Coupon Code" id="coupon-input">
+              <button class="btn btn-outline-secondary" type="button" id="apply-coupon">Apply</button>
+            </div>
+          </div>
+          
+          <div class="d-grid gap-2">
+          
+              <a href="{{ url_for('auth.payment_gateway') }}" class="btn btn-success btn-lg">
+              🛒 Proceed to Checkout
+              </a>
+            </button>
+            <div class="text-center">
+              <small class="text-muted">
+                💰 You'll save ₹25 on your next order!
+              </small>
+            </div>
+          </div>
+          
+          <div class="mt-3">
+            <small class="text-muted">
+              <strong>Delivery Time:</strong> 25-30 minutes<br>
+              <strong>Payment:</strong> Cash on Delivery available
+            </small>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+<script>
+  // Existing cart functionality (unchanged)
+  function debounce(func, delay) {
+    let timer;
+    return function(...args) {
+      clearTimeout(timer);
+      timer = setTimeout(() => func.apply(this, args), delay);
+    };
+  }
+
+  async function updateQuantity(itemId, quantity, row) {
+    if (quantity < 1) quantity = 1;
+
+    try {
+      const res = await fetch('{{ url_for("auth.api_update_cart_quantity") }}', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ item_id: itemId, quantity: quantity })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        row.querySelector('.subtotal').textContent = data.subtotal.toFixed(2);
+        document.getElementById('total-amount').textContent = data.total.toFixed(2);
+        
+        // Update bill summary
+        updateBillSummary(data.total);
+      } else {
+        alert(data.message || 'Error updating cart');
+      }
+    } catch (err) {
+      alert('Network error updating cart');
+      console.error(err);
+    }
+  }
+
+  document.querySelectorAll('tr[data-item-id]').forEach(row => {
+    const itemId = row.getAttribute('data-item-id');
+    const input = row.querySelector('.qty-input');
+    const btnDec = row.querySelector('.btn-decrease');
+    const btnInc = row.querySelector('.btn-increase');
+
+    const debouncedUpdate = debounce(() => {
+      const qty = parseInt(input.value) || 1;
+      updateQuantity(itemId, qty, row);
+    }, 500);
+
+    btnDec.addEventListener('click', () => {
+      let qty = parseInt(input.value) || 1;
+      if (qty > 1) {
+        input.value = qty - 1;
+        updateQuantity(itemId, qty - 1, row);
+      }
+    });
+
+    btnInc.addEventListener('click', () => {
+      let qty = parseInt(input.value) || 1;
+      input.value = qty + 1;
+      updateQuantity(itemId, qty + 1, row);
+    });
+
+    input.addEventListener('input', () => {
+      if (parseInt(input.value) < 1) input.value = 1;
+      debouncedUpdate();
+    });
+  });
+
+  document.querySelectorAll('.btn-remove').forEach(button => {
+    button.addEventListener('click', async (e) => {
+      const row = e.target.closest('tr');
+      const itemId = row.getAttribute('data-item-id');
+
+      if (!confirm('Remove this item from cart?')) return;
+
+      try {
+        const res = await fetch('{{ url_for("auth.api_remove_from_cart") }}', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ item_id: itemId })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          row.remove();
+          document.getElementById('total-amount').textContent = data.total.toFixed(2);
+          
+          // Update bill summary
+          updateBillSummary(data.total);
+
+          const tbody = document.querySelector('tbody');
+          if (!tbody.querySelector('tr')) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center">Your cart is empty.</td></tr>';
+          }
+        } else {
+          alert(data.message || 'Failed to remove item');
+        }
+      } catch (err) {
+        alert('Network error');
+        console.error(err);
+      }
+    });
+  });
+
+  // New UI functionality
+  function selectAddress(element) {
+    document.querySelectorAll('.address-card').forEach(card => {
+      card.classList.remove('selected');
+    });
+    element.classList.add('selected');
+    element.querySelector('input[type="radio"]').checked = true;
+  }
+  async function updateSessionGrandTotal(grandTotal) {
+    try {
+      await fetch('{{ url_for("auth.api_set_grand_total") }}', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ grand_total: grandTotal })
+      });
+    } catch (err) {
+      console.error('Error updating session:', err);
+    }
+  }
+
+  //update bill summary
+  function updateBillSummary(itemTotal) {
+    const deliveryFee = itemTotal > 0 ? 40 : 0;
+    const taxes = itemTotal > 0 ? (itemTotal * 0.05) : 0;
+    const discount = parseFloat(document.getElementById('discount')?.textContent || '0');
+    let grandTotal = itemTotal + deliveryFee + taxes - discount;
+    if (grandTotal < 0) grandTotal = 0;
+
+    // Update UI
+    document.getElementById('bill-subtotal').textContent = itemTotal.toFixed(2);
+    document.getElementById('taxes').textContent = taxes.toFixed(2);
+    document.getElementById('delivery-fee').textContent = deliveryFee.toFixed(2);
+    document.getElementById('grand-total').textContent = grandTotal.toFixed(2);
+    
+    // Update session with new grand total
+    updateSessionGrandTotal(grandTotal);
+  }
+
+
+  // Coupon functionality
+    document.getElementById('apply-coupon')?.addEventListener('click', async function() {
+    const couponCode = document.getElementById('coupon-input').value.trim();
+    if (couponCode.toUpperCase() === 'SAVE20') {
+      document.getElementById('discount').textContent = '20';
+      const currentTotal = parseFloat(document.getElementById('bill-subtotal').textContent);
+      updateBillSummary(currentTotal);
+      alert('Coupon applied successfully! ₹20 discount added.');
+    } else if (couponCode) {
+      alert('Invalid coupon code');
+    }
+  });
+
+  // Initialize bill summary on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    const initialTotal = parseFloat("{{ total|default(0) }}") || 0;
+    updateBillSummary(initialTotal);
+  });
+</script>
+
+</body>
+</html>

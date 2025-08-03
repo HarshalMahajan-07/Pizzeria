@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Store Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --primary-color: #6366f1;
+      --primary-dark: #4f46e5;
+      --secondary-color: #f1f5f9;
+      --success-color: #10b981;
+      --danger-color: #ef4444;
+      --warning-color: #f59e0b;
+      --dark-color: #1e293b;
+      --light-color: #f8fafc;
+      --border-radius: 16px;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --gradient-success: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      color: var(--dark-color);
+      line-height: 1.6;
+    }
+
+    .dashboard-container {
+      background: var(--light-color);
+      min-height: 100vh;
+      margin-left: 0;
+      transition: margin-left 0.3s ease;
+    }
+
+    /* Header Styles */
+    .dashboard-header {
+      background: white;
+      padding: 1.5rem 2rem;
+      border-bottom: 1px solid #e2e8f0;
+      box-shadow: var(--shadow-sm);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .welcome-section {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .welcome-text h1 {
+      font-size: 1.875rem;
+      font-weight: 700;
+      color: var(--dark-color);
+      margin-bottom: 0.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .welcome-text .store-name {
+      font-size: 1.125rem;
+      color: #64748b;
+      font-weight: 500;
+      padding-left: 2.5rem;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    /* Main Content */
+    .main-content {
+      padding: 2rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* Card Styles */
+    .modern-card {
+      background: white;
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow-md);
+      border: 1px solid #e2e8f0;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      margin-bottom: 1.5rem;
+    }
+
+    .modern-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .card-header {
+      padding: 1.5rem 2rem;
+      border-bottom: 1px solid #e2e8f0;
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    }
+
+    .card-header h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--dark-color);
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .card-body {
+      padding: 2rem;
+    }
+
+    /* Form Styles - UPDATED */
+    .modern-form {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-group.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .form-label {
+      font-weight: 600;
+      color: var(--dark-color);
+      margin-bottom: 0.5rem;
+      font-size: 0.875rem;
+    }
+
+    .form-control {
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 0.75rem 1rem;
+      font-size: 0.875rem;
+      transition: all 0.3s ease;
+      background: white;
+      font-family: 'Inter', sans-serif;
+    }
+
+    /* ENHANCED DESCRIPTION FIELD */
+    .form-control.description {
+      min-height: 120px;
+      resize: vertical;
+      padding: 1rem;
+      line-height: 1.6;
+    }
+
+    .form-control:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+      outline: none;
+    }
+
+    .btn {
+      border-radius: 12px;
+      font-weight: 600;
+      padding: 0.75rem 1.5rem;
+      border: none;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .btn-primary {
+      background: var(--gradient-primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-success {
+      background: var(--gradient-success);
+      color: white;
+    }
+
+    .btn-success:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-outline-danger {
+      border: 2px solid var(--danger-color);
+      color: var(--danger-color);
+      background: white;
+    }
+
+    .btn-outline-danger:hover {
+      background: var(--danger-color);
+      color: white;
+    }
+
+    /* Table Styles - UPDATED */
+    .modern-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      table-layout: fixed;
+    }
+
+    .modern-table thead {
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    }
+
+    .modern-table th {
+      padding: 1rem 1.5rem;
+      font-weight: 600;
+      color: var(--dark-color);
+      text-align: left;
+      font-size: 0.875rem;
+      border-bottom: 2px solid #e2e8f0;
+    }
+
+    .modern-table td {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 0.875rem;
+      vertical-align: top;
+    }
+
+    .modern-table tbody tr {
+      transition: background-color 0.2s ease;
+    }
+
+    .modern-table tbody tr:hover {
+      background: #f8fafc;
+    }
+
+    .product-image {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 12px;
+      border: 2px solid #e2e8f0;
+    }
+
+    /* ENHANCED DESCRIPTION CELL */
+    .description-cell {
+      max-height: 120px;
+      overflow-y: auto;
+      padding-right: 1rem;
+      word-wrap: break-word;
+      line-height: 1.6;
+    }
+    .description-cell::-webkit-scrollbar {
+      width: 6px;
+    }
+    .description-cell::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 10px;
+    }
+    .description-cell::-webkit-scrollbar-thumb {
+      background: #c5c5c5;
+      border-radius: 10px;
+    }
+
+    /* Stats Cards */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow-md);
+      border: 1px solid #e2e8f0;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover {
+      transform: translateY(-3px);
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--gradient-primary);
+    }
+
+    .stat-card.success::before {
+      background: var(--gradient-success);
+    }
+
+    .stat-card.warning::before {
+      background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--dark-color);
+      margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+      color: #64748b;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    .stat-icon {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      font-size: 1.5rem;
+      color: #94a3b8;
+      opacity: 0.7;
+    }
+
+    /* Sales Report */
+    .sales-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      border-radius: 12px;
+      margin-bottom: 0.75rem;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      transition: all 0.3s ease;
+    }
+
+    .sales-item:hover {
+      background: #f1f5f9;
+      transform: translateX(5px);
+    }
+
+    .sales-date {
+      font-weight: 600;
+      color: var(--dark-color);
+    }
+
+    .sales-amount {
+      background: var(--gradient-primary);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 0.875rem;
+      min-width: 90px;
+      text-align: center;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .btn-sm {
+      padding: 0.5rem 0.8rem;
+      font-size: 0.75rem;
+      border-radius: 10px;
+    }
+
+    /* Empty States */
+    .empty-state {
+      text-align: center;
+      padding: 3rem 2rem;
+      color: #64748b;
+    }
+
+    .empty-state i {
+      font-size: 3rem;
+      color: #cbd5e1;
+      margin-bottom: 1rem;
+      opacity: 0.7;
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .animate-fadeInUp {
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 0.6s ease forwards;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .dashboard-header {
+        padding: 1rem;
+      }
+
+      .welcome-section {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+
+      .main-content {
+        padding: 1rem;
+      }
+
+      .modern-form {
+        grid-template-columns: 1fr;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .description-cell {
+        max-height: 80px;
+      }
+    }
+
+    /* Flash Messages */
+    .alert {
+      border: none;
+      border-radius: 12px;
+      padding: 1rem 1.5rem;
+      margin-bottom: 1rem;
+      border-left: 4px solid;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .alert-success {
+      background: rgba(16, 185, 129, 0.1);
+      color: #065f46;
+      border-left-color: var(--success-color);
+    }
+
+    .alert-danger {
+      background: rgba(239, 68, 68, 0.1);
+      color: #991b1b;
+      border-left-color: var(--danger-color);
+    }
+    
+    /* New Section Divider */
+    .section-divider {
+      height: 1px;
+      background: linear-gradient(to right, transparent, #e2e8f0, transparent);
+      margin: 2rem 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <!-- Header -->
+    <div class="dashboard-header">
+      <div class="welcome-section">
+        <div class="welcome-text">
+          <h1><i class="fas fa-store text-primary"></i> Welcome back, {{ store.owner_name }}</h1>
+          <div class="store-name">{{ store.store_name }}</div>
+        </div>
+        <div class="header-actions dropdown">
+          <button class="btn btn-primary dropdown-toggle d-flex align-items-center gap-2" type="button" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-user-circle"></i> Profile
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="profileDropdown">
+            <li><a class="dropdown-item" href="{{ url_for('auth.store_profile') }}"><i class="fas fa-user me-2 text-primary"></i>View Profile</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('auth.store_logout') }}"><i class="fas fa-sign-out-alt me-2 text-danger"></i>Logout</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="main-content">
+      <!-- Stats Overview -->
+      <div class="stats-grid animate-fadeInUp">
+        <div class="stat-card">
+          <div class="stat-value">{{ items|length if items else 0 }}</div>
+          <div class="stat-label">Total Products</div>
+          <i class="fas fa-box stat-icon"></i>
+        </div>
+        <div class="stat-card success">
+          <div class="stat-value">₹{{ sales_report|sum(attribute='total_sales') if sales_report else 0 }}</div>
+          <div class="stat-label">Weekly Sales</div>
+          <i class="fas fa-rupee-sign stat-icon"></i>
+        </div>
+        <div class="stat-card warning">
+          <div class="stat-value">{{ sales_report|length if sales_report else 0 }}</div>
+          <div class="stat-label">Active Days</div>
+          <i class="fas fa-calendar-alt stat-icon"></i>
+        </div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <!-- Add Product Form -->
+      <div class="modern-card animate-fadeInUp">
+        <div class="card-header">
+          <h2>
+            <i class="fas fa-plus-circle text-success"></i>
+            Add New Product
+          </h2>
+        </div>
+        <div class="card-body">
+          <form method="POST" action="/store/add-item" enctype="multipart/form-data">
+            <div class="modern-form">
+              <div class="form-group">
+                <label for="name" class="form-label">Product Name</label>
+                <input type="text" id="name" name="name" class="form-control" placeholder="Enter product name" required />
+              </div>
+              <div class="form-group">
+                <label for="price" class="form-label">Price (₹)</label>
+                <input type="number" step="0.01" id="price" name="price" class="form-control" placeholder="0.00" required />
+              </div>
+              <div class="form-group full-width">
+                <!-- ENHANCED DESCRIPTION FIELD -->
+                <label for="description" class="form-label">Description</label>
+                <textarea id="description" name="description" class="form-control description" placeholder="Enter detailed product description..." rows="4" required></textarea>
+              </div>
+              <div class="form-group full-width">
+                <label for="image" class="form-label">Product Image</label>
+                <input type="file" id="image" name="image" class="form-control" accept="image/*" />
+              </div>
+            </div>
+            <div class="form-group full-width">
+  <label class="form-label">Category</label>
+  <div class="d-flex gap-4 align-items-center">
+    <div class="form-check">
+      <input class="form-check-input" type="radio" name="category" id="pizza" value="Pizza" required>
+      <label class="form-check-label" for="pizza">
+        Pizza
+      </label>
+    </div>
+    <div class="form-check">
+      <input class="form-check-input" type="radio" name="category" id="beverage" value="Beverage" required>
+      <label class="form-check-label" for="beverage">
+        Beverage
+      </label>
+    </div>
+    <div class="form-check">
+      <input class="form-check-input" type="radio" name="category" id="breads" value="Breads" required>
+      <label class="form-check-label" for="breads">
+        Breads
+      </label>
+    </div>
+  </div>
+</div>
+
+            <button type="submit" class="btn btn-success mt-2">
+              <i class="fas fa-plus"></i>
+              Add Product
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <!-- Products Grid -->
+      <div class="row">
+        <div class="col-lg-8">
+          <div class="modern-card animate-fadeInUp">
+            <div class="card-header">
+              <h2>
+                <i class="fas fa-boxes text-primary"></i>
+                Product Inventory
+              </h2>
+            </div>
+            <div class="card-body">
+              {% if items %}
+                <div class="table-responsive">
+                  <table class="modern-table">
+                    <thead>
+                      <tr>
+                        <th style="width:5%">#</th>
+                        <th style="width:10%">Image</th>
+                        <th style="width:20%">Product Name</th>
+                        <th style="width:10%">Price</th>
+                        <th style="width:40%">Description</th>
+                        <th style="width:15%">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for item in items %}
+                      <tr>
+                        <td><strong>{{ loop.index }}</strong></td>
+                        <td>
+                          {% if item.image %}
+                            <img src="data:image/jpeg;base64,{{ item.image }}" alt="{{ item.name }}" class="product-image" />
+                          {% else %}
+                            <div class="product-image d-flex align-items-center justify-content-center bg-light">
+                              <i class="fas fa-image text-muted"></i>
+                            </div>
+                          {% endif %}
+                        </td>
+                        <td><strong>{{ item.name }}</strong></td>
+                        <td><strong class="text-success">₹{{ item.price }}</strong></td>
+                        <!-- ENHANCED DESCRIPTION CELL -->
+                        <td class="description-cell">{{ item.description }}</td>
+                        <td>
+                          <div class="action-buttons">
+                            <a href="/store/edit-item/{{ item._id }}" class="btn btn-primary btn-sm">
+                              <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="/store/delete-item/{{ item._id }}" class="btn btn-outline-danger btn-sm" onclick="return confirm('Are you sure you want to delete this item?')">
+                              <i class="fas fa-trash"></i>
+                            </a>
+                          </div>
+                        </td>
+                      </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              {% else %}
+                <div class="empty-state">
+                  <i class="fas fa-box-open"></i>
+                  <h4>No Products Yet</h4>
+                  <p>Start by adding your first product using the form above.</p>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-4">
+          <!-- Sales Report -->
+          <div class="modern-card animate-fadeInUp">
+            <div class="card-header">
+              <h2>
+                <i class="fas fa-chart-line text-success"></i>
+                Sales Report
+              </h2>
+            </div>
+            <div class="card-body">
+              {% if sales_report %}
+                {% for day in sales_report %}
+                <div class="sales-item">
+                  <div class="sales-date">{{ day.date }}</div>
+                  <div class="sales-amount">₹{{ day.total_sales }}</div>
+                </div>
+                {% endfor %}
+              {% else %}
+                <div class="empty-state">
+                  <i class="fas fa-chart-line"></i>
+                  <h5>No Sales Data</h5>
+                  <p>Sales data will appear here once you start making sales.</p>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="position-fixed top-0 end-0 p-3" style="z-index: 1050;">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <script>
+    // Add smooth animations on load
+    document.addEventListener('DOMContentLoaded', function() {
+      const cards = document.querySelectorAll('.animate-fadeInUp');
+      cards.forEach((card, index) => {
+        setTimeout(() => {
+          card.style.opacity = '1';
+          card.style.transform = 'translateY(0)';
+        }, index * 150);
+      });
+      
+      // Add hover effect to stat cards
+      const statCards = document.querySelectorAll('.stat-card');
+      statCards.forEach(card => {
+        card.addEventListener('mouseenter', () => {
+          card.style.transform = 'translateY(-3px)';
+        });
+        card.addEventListener('mouseleave', () => {
+          card.style.transform = 'translateY(0)';
+        });
+      });
+    });
+
+    // Auto-dismiss alerts after 5 seconds
+    setTimeout(function() {
+      const alerts = document.querySelectorAll('.alert');
+      alerts.forEach(alert => {
+        const bsAlert = new bootstrap.Alert(alert);
+        bsAlert.close();
+      });
+    }, 5000);
+  </script>
+</body>
+</html>

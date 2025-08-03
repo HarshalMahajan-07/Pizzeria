@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>My Orders</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-red-50 text-gray-800 font-sans">
+
+  <div class="max-w-5xl mx-auto px-4 py-10">
+    <h1 class="text-4xl font-bold text-center text-red-600 mb-10">🍕 My Orders</h1>
+
+    {% if orders %}
+      <div class="space-y-6">
+        {% for order in orders %}
+        <div class="bg-white shadow-md rounded-xl border border-red-200 p-6">
+          <div class="flex justify-between items-center mb-4">
+            <div>
+              <h2 class="text-xl font-semibold text-red-700">Order #{{ order._id }}</h2>
+              <p class="text-sm text-gray-500">
+                        Placed on {{ order.placed_at.strftime('%d %b %Y, %I:%M %p') }}
+                        </p>
+            </div>
+            <span class="px-3 py-1 bg-green-100 text-green-700 text-sm font-medium rounded-full">{{ order.status }}</span>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-4 text-sm">
+            <div>
+              <h3 class="font-semibold text-red-500 mb-1">Items Ordered</h3>
+              <ul class="list-disc list-inside text-gray-700">
+                {% for item in order['items'] %}
+                  <li>{{ item.name }} × {{ item.quantity }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+            <div>
+              <h3 class="font-semibold text-red-500 mb-1">Delivery Details</h3>
+              <p>{{ order.name }}</p>
+              <p>{{ order.address.street }}, {{ order.address.city }}</p>
+              <p>{{ order.address.state }} - {{ order.address.pincode }}</p>
+              <p>{{ order.address.phone }}</p>
+            </div>
+          </div>
+
+          <div class="mt-4 flex justify-between text-base font-semibold">
+            <span class="text-red-600">Total: ₹{{ order.total_amount }}</span>
+            <span class="text-gray-500">Payment: {{ order.payment_method|capitalize }}</span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="text-center text-gray-600 mt-20">
+        <p class="text-xl">You haven’t placed any orders yet.</p>
+        <a href="{{ url_for('auth.customer_dashboard') }}" class="mt-4 inline-block text-red-600 font-medium hover:underline">Browse Pizzas →</a>
+      </div>
+    {% endif %}
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Products</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Enhanced product card styles */
+    .product-card {
+      transition: all 0.4s ease;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+      background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+      border: 1px solid rgba(239, 68, 68, 0.1);
+      position: relative;
+    }
+    .product-card:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 15px 35px rgba(239, 68, 68, 0.15);
+      border-color: rgba(239, 68, 68, 0.2);
+    }
+    .product-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #ef4444, #dc2626);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .product-card:hover::before {
+      opacity: 1;
+    }
+    .product-image {
+      position: relative;
+      overflow: hidden;
+    }
+    .product-image img {
+      transition: transform 0.4s ease;
+    }
+    .product-card:hover .product-image img {
+      transform: scale(1.1);
+    }
+    .price-tag {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: bold;
+      font-size: 18px;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+      position: relative;
+    }
+    .price-tag::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: -6px;
+      transform: translateY(-50%);
+      width: 0;
+      height: 0;
+      border-top: 6px solid transparent;
+      border-bottom: 6px solid transparent;
+      border-right: 6px solid #dc2626;
+    }
+    .add-to-cart-btn {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .add-to-cart-btn:hover {
+      background: linear-gradient(135deg, #dc2626, #b91c1c);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+    }
+    .add-to-cart-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s ease;
+    }
+    .add-to-cart-btn:hover::before {
+      left: 100%;
+    }
+    .description-text {
+      line-height: 1.6;
+      color: #4b5563;
+      font-size: 15px;
+      margin: 12px 0 16px 0;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      min-height: 72px;
+    }
+    .product-title {
+      color: #1f2937;
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      line-height: 1.3;
+    }
+    .empty-state {
+      background: linear-gradient(135deg, #f9fafb, #f3f4f6);
+      border: 2px dashed #d1d5db;
+      border-radius: 16px;
+      padding: 48px 24px;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-6px); }
+    }
+    .floating-icon {
+      animation: float 3s ease-in-out infinite;
+    }
+    
+    /* Added styles for category sections */
+    .category-section {
+      margin-bottom: 40px;
+    }
+    .category-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #fecaca;
+    }
+    .category-icon {
+      font-size: 24px;
+      margin-right: 12px;
+    }
+    .category-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: #1f2937;
+    }
+    .products-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 24px;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+  <section class="max-w-7xl mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-4">
+      <h3 id="category-title" class="text-3xl font-bold text-gray-800">All Products</h3>
+      <a href="{{ url_for('auth.customer_dashboard') }}" class="text-red-500 hover:underline font-medium">← Back to Dashboard</a>
+    </div>
+    
+    <div id="category-nav" class="flex flex-wrap gap-3 mb-8 border-b border-gray-200 pb-4">
+      <a href="?category=all" data-category="all" class="category-link text-sm font-semibold py-2 px-5 rounded-full transition-all duration-300">All</a>
+      <a href="?category=pizzas" data-category="Pizza" class="category-link text-sm font-semibold py-2 px-5 rounded-full transition-all duration-300">🍕 Pizzas</a>
+      <a href="?category=breads" data-category="Breads" class="category-link text-sm font-semibold py-2 px-5 rounded-full transition-all duration-300">🥖 Breads</a>
+      <a href="?category=beverages" data-category="Beverage" class="category-link text-sm font-semibold py-2 px-5 rounded-full transition-all duration-300">🥤 Beverages</a>
+    </div>
+
+    <div id="loading" class="flex justify-center items-center mt-12">
+      <svg class="animate-spin h-6 w-6 text-red-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+      </svg>
+      <span class="ml-2 text-gray-500">Loading products...</span>
+    </div>
+
+    <div id="product-grid" class="grid grid-cols-1 gap-12"></div>
+
+    <p id="no-products" class="hidden text-center text-gray-500 mt-12">No products found in this category.</p>
+  </section>
+
+  <a href="{{ url_for('auth.view_cart') }}" class="fixed bottom-8 right-8 bg-gradient-to-r from-red-600 to-red-700 text-white w-16 h-16 rounded-full flex items-center justify-center shadow-2xl hover:from-red-700 hover:to-red-800 transition-all duration-300 hover:scale-110">
+    <i class="fas fa-shopping-cart text-xl"></i>
+    <span 
+      id="cart-count" 
+      data-cart="{{ session['cart']|length if session.get('cart') else 0 }}" 
+      class="absolute -top-2 -right-2 bg-yellow-500 text-white rounded-full w-7 h-7 flex items-center justify-center text-sm font-bold shadow-lg">
+      {{ session['cart']|length if session.get('cart') else 0 }}
+    </span>
+  </a>
+
+  <script>
+    // Helper function to create product card
+    function createProductCard(item) {
+      const card = document.createElement('div');
+      card.className = 'product-card';
+      card.innerHTML = `
+        ${item.photo ? 
+          `<div class="product-image">
+            <img src="data:image/jpeg;base64,${item.photo}" alt="${item.name}" class="w-full h-56 object-cover">
+          </div>` 
+          : 
+          `<div class="bg-gradient-to-br from-gray-100 to-gray-200 border-2 border-dashed border-gray-300 w-full h-56 flex items-center justify-center">
+            <i class="fas fa-pizza-slice text-5xl text-gray-400 floating-icon"></i>
+          </div>`
+        }
+        <div class="p-6">
+          <div class="flex justify-between items-start mb-3">
+            <h3 class="product-title flex-1 mr-4">${item.name.charAt(0).toUpperCase() + item.name.slice(1)}</h3>
+            <div class="price-tag">₹${item.price}</div>
+          </div>
+          <p class="text-sm text-gray-500 mb-2">From Store: <span class="font-medium text-gray-700">${item.store_owner || "N/A"}</span></p>
+          <p class="description-text">${item.description}</p>
+          <button 
+            onclick="addToCart('${item._id}', this)" 
+            class="add-to-cart-btn text-white py-3 px-6 rounded-full w-full font-semibold text-lg relative overflow-hidden"
+          >
+            <i class="fas fa-cart-plus mr-2"></i> Add to Cart
+          </button>
+        </div>`;
+      return card;
+    }
+
+    // Function to render products grouped by category
+    function renderGroupedProducts(data) {
+      const grid = document.getElementById('product-grid');
+      grid.innerHTML = ''; // Clear existing content
+      
+      // Define the order of categories
+      const categoryOrder = ['Pizza', 'Breads', 'Beverage'];
+      
+      // Create a map for category to products
+      const categoryMap = {};
+      data.forEach(item => {
+        if (!categoryMap[item.category]) {
+          categoryMap[item.category] = [];
+        }
+        categoryMap[item.category].push(item);
+      });
+      
+      // Render each category in the specified order
+      categoryOrder.forEach(category => {
+        if (categoryMap[category] && categoryMap[category].length > 0) {
+          // Create category section
+          const section = document.createElement('div');
+          section.className = 'category-section';
+          
+          // Create category header
+          const header = document.createElement('div');
+          header.className = 'category-header';
+          
+          // Set appropriate title for category
+          let title = category;
+          if (category === 'Pizza') title = 'Pizzas';
+          if (category === 'Beverage') title = 'Beverages';
+          
+          header.innerHTML = `
+            <span class="category-icon">
+              ${category === 'Pizza' ? '🍕' : category === 'Breads' ? '🥖' : '🥤'}
+            </span>
+            <h2 class="category-title">${title}</h2>
+          `;
+          
+          section.appendChild(header);
+          
+          // Create products container
+          const productsContainer = document.createElement('div');
+          productsContainer.className = 'products-container grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8';
+          
+          // Add products to container
+          categoryMap[category].forEach(item => {
+            const card = createProductCard(item);
+            productsContainer.appendChild(card);
+          });
+          
+          section.appendChild(productsContainer);
+          grid.appendChild(section);
+        }
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const cartCountElement = document.getElementById('cart-count');
+      let cartCount = parseInt(cartCountElement.getAttribute("data-cart")) || 0;
+
+      // Map URL parameters to database category values
+      const categoryMappings = {
+        'all': 'all',
+        'pizzas': 'Pizza',
+        'breads': 'Breads',
+        'beverages': 'Beverage'
+      };
+      
+      // Get category from URL
+      const categoryParam = new URLSearchParams(window.location.search).get("category") || "all";
+      
+      // Get the correct backend category value
+      const backendCategory = categoryMappings[categoryParam] || categoryParam;
+
+      // Update the page title based on the category
+      const titleText = categoryParam === 'all'
+        ? 'All Products'
+        : `${categoryParam.charAt(0).toUpperCase() + categoryParam.slice(1)}`;
+      document.getElementById("category-title").textContent = titleText;
+
+      // Highlight the active category link in the navigation
+      const navLinks = document.querySelectorAll('.category-link');
+      navLinks.forEach(link => {
+        if (link.getAttribute('data-category') === backendCategory) {
+          link.classList.add('bg-red-600', 'text-white', 'shadow-md');
+          link.classList.remove('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+        } else {
+          link.classList.add('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+          link.classList.remove('bg-red-600', 'text-white', 'shadow-md');
+        }
+      });
+
+      const loadingText = document.getElementById('loading');
+      const grid = document.getElementById('product-grid');
+      const emptyText = document.getElementById('no-products');
+
+      // Fetch products for the determined category
+      fetch(`/api/category/${backendCategory}`)
+        .then(res => res.json())
+        .then(data => {
+          loadingText.classList.add('hidden');
+
+          if (!data || data.length === 0) {
+            emptyText.classList.remove('hidden');
+            return;
+          }
+
+          // For "All" category, render grouped by category
+          if (backendCategory === 'all') {
+            renderGroupedProducts(data);
+          } 
+          // For specific categories, render normally
+          else {
+            grid.className = 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8';
+            data.forEach(item => {
+              const card = createProductCard(item);
+              grid.appendChild(card);
+            });
+          }
+        })
+        .catch(err => {
+          loadingText.classList.add('hidden');
+          emptyText.classList.remove('hidden');
+          console.error("Error fetching products:", err);
+        });
+    });
+
+    async function addToCart(productId, btn) {
+      btn.disabled = true;
+      const originalHtml = btn.innerHTML;
+      const cartCountElement = document.getElementById('cart-count');
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Adding...';
+
+      try {
+        const response = await fetch("/api/cart/add", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Requested-With": "XMLHttpRequest"
+          },
+          body: JSON.stringify({ item_id: productId })
+        });
+
+        if (!response.ok) throw new Error('Network response was not ok');
+
+        const data = await response.json();
+
+        let cartCount = data.cart_count || (parseInt(cartCountElement.textContent) + 1);
+        cartCountElement.textContent = cartCount;
+
+        // Animate cart button
+        cartCountElement.parentElement.style.transform = 'scale(1.2)';
+        setTimeout(() => {
+          cartCountElement.parentElement.style.transform = 'scale(1)';
+        }, 200);
+
+        // Update button state to success
+        btn.innerHTML = '<i class="fas fa-check mr-2"></i> Added!';
+        btn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+        
+        // Revert button after a delay
+        setTimeout(() => {
+          btn.innerHTML = originalHtml;
+          btn.style.background = '';
+          btn.disabled = false;
+        }, 1500);
+
+      } catch (error) {
+        console.error("Add to cart error:", error);
+        btn.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i> Try Again';
+        setTimeout(() => {
+          btn.innerHTML = originalHtml;
+          btn.disabled = false;
+        }, 2000);
+      }
+    }
+  </script>
+</body>
+</html>

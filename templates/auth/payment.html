@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Payment Gateway</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+<div class="max-w-xl mx-auto p-6 mt-10 bg-white shadow-xl rounded-xl">
+  <h2 class="text-2xl font-bold mb-6 text-center">🧾 Payment Gateway</h2>
+
+  <!-- Tabs -->
+  <div class="mb-6">
+    <nav class="flex space-x-4 justify-center">
+      <button class="tab-button active-tab" data-target="card">💳 Card</button>
+      <button class="tab-button" data-target="upi">📱 UPI</button>
+      <button class="tab-button" data-target="wallet">👛 Wallet</button>
+    </nav>
+  </div>
+
+  <!-- Tab Content -->
+  <form id="paymentForm" method="POST">
+    <input type="hidden" name="method" id="method" value="card">
+    <div id="card" class="tab-content">
+      <input type="text" name="card_number" placeholder="Card Number" class="input-field">
+      <div class="flex space-x-2">
+        <input type="text" name="expiry" placeholder="MM/YY" class="input-field w-1/2">
+        <input type="password" name="cvv" placeholder="CVV" class="input-field w-1/2">
+      </div>
+      <input type="text" name="cardholder" placeholder="Cardholder Name" class="input-field">
+    </div>
+
+    <div id="upi" class="tab-content hidden">
+      <input type="text" name="upi_id" placeholder="example@upi" class="input-field">
+    </div>
+
+    <div id="wallet" class="tab-content hidden">
+      <select name="wallet_type" class="input-field">
+        <option>Paytm</option>
+        <option>PhonePe</option>
+        <option>Mobikwik</option>
+      </select>
+    </div>
+
+    <button type="submit" class="mt-4 w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
+      Pay ₹{{ total_amount }}
+    </button>
+  </form>
+
+  <a href="{{ url_for('auth.view_cart') }}" class="block mt-4 text-center text-blue-500 hover:underline">← Back to Cart 🛒</a>
+</div>
+
+<!-- Modal -->
+<div id="confirmationModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+  <div class="bg-white rounded-lg p-6 max-w-md w-full shadow-lg text-center">
+    <h2 class="text-2xl font-bold text-green-600 mb-4">✅ Order Confirmed!</h2>
+    <p class="mb-2">Order ID: <span id="orderId" class="font-semibold"></span></p>
+    <p class="mb-2">Customer: <span id="userName"></span></p>
+    <p class="mb-2">Delivering to: <span id="userAddress"></span></p>
+    <p class="mb-4 text-sm text-gray-600" id="orderItems"></p>
+    <button onclick="location.href='/customer/my-orders'" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+      Go to My Orders
+    </button>
+  </div>
+</div>
+
+<script>
+  // Tab Switching
+  document.querySelectorAll('.tab-button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+      document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active-tab'));
+      document.getElementById(btn.dataset.target).classList.remove('hidden');
+      btn.classList.add('active-tab');
+      document.getElementById('method').value = btn.dataset.target;
+    });
+  });
+
+  // Handle form submission (AJAX-style for demo purposes)
+  document.getElementById('paymentForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    const form = e.target;
+    const formData = new FormData(form);
+    const response = await fetch('/place-order', {
+      method: 'POST',
+      body: formData
+    });
+    const data = await response.json();
+    if (data.success) {
+      document.getElementById('orderId').innerText = data.order_id;
+      document.getElementById('userName').innerText = data.name;
+      document.getElementById('userAddress').innerText = data.address;
+      document.getElementById('orderItems').innerText = `🧀 ${data.items}`;
+      document.getElementById('confirmationModal').classList.remove('hidden');
+    }
+  });
+</script>
+
+<style>
+  .tab-button {
+    padding: 0.5rem 1rem;
+    border: 1px solid #ccc;
+    background: #f9fafb;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-weight: 500;
+  }
+  .active-tab {
+    background-color: #3b82f6;
+    color: white;
+    border-color: #3b82f6;
+  }
+  .input-field {
+    width: 100%;
+    padding: 0.6rem;
+    border: 1px solid #ccc;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+  }
+</style>
+
+</body>
+</html>
