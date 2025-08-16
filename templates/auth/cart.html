@@ -270,6 +270,7 @@
   </div>
 
 <script>
+  // Coupons and appliedCoupon code remain the same
   const coupons = {
     "SAVE20": { type: "flat", value: 20, description: "₹20 off your order", icon: "💰" },
     "PIZZA50": { type: "percent", value: 50, description: "50% off on all pizzas", icon: "🍕" },
@@ -311,27 +312,31 @@
     return 0;
   }
 
-  function updateBillSummary(itemTotal) {
-    let deliveryFee = itemTotal > 0 ? 40 : 0;
-    if (appliedCoupon === "FREESHIP") deliveryFee = 0;
-    const taxes = itemTotal > 0 ? (itemTotal * 0.05) : 0;
-    const discount = calculateDiscount(itemTotal);
-    let grandTotal = itemTotal + deliveryFee + taxes - discount;
-    if (grandTotal < 0) grandTotal = 0;
+function updateBillSummary(itemTotal) {
+  let deliveryFee = itemTotal > 0 ? 40 : 0;
+  if (appliedCoupon === "FREESHIP") deliveryFee = 0;
+  const taxes = itemTotal > 0 ? (itemTotal * 0.05) : 0;
+  const discount = calculateDiscount(itemTotal);
+  let grandTotal = itemTotal + deliveryFee + taxes - discount;
+  if (grandTotal < 0) grandTotal = 0;
 
-    document.getElementById('bill-subtotal').textContent = itemTotal.toFixed(2);
-    document.getElementById('taxes').textContent = taxes.toFixed(2);
-    document.getElementById('delivery-fee').textContent = deliveryFee.toFixed(2);
-    document.getElementById('discount').textContent = discount.toFixed(2);
-    document.getElementById('grand-total').textContent = grandTotal.toFixed(2);
+  // Update bill section
+  document.getElementById('bill-subtotal').textContent = itemTotal.toFixed(2);
+  document.getElementById('taxes').textContent = taxes.toFixed(2);
+  document.getElementById('delivery-fee').textContent = deliveryFee.toFixed(2);
+  document.getElementById('discount').textContent = discount.toFixed(2);
+  document.getElementById('grand-total').textContent = grandTotal.toFixed(2);
 
-    updateSessionGrandTotal(grandTotal);
-  }
+  // Update table total (items only)
+  document.getElementById('total-amount').textContent = itemTotal.toFixed(2);
+
+  updateSessionGrandTotal(grandTotal);
+}
 
   function applyCoupon(code) {
     if (coupons[code]) {
       appliedCoupon = code;
-      const currentTotal = parseFloat(document.getElementById('bill-subtotal').textContent);
+      const currentTotal = getCartTotal();
       updateBillSummary(currentTotal);
 
       document.querySelectorAll(".apply-btn").forEach(btn => btn.classList.remove("active"));
@@ -361,6 +366,49 @@
     element.querySelector('input[type="radio"]').checked = true;
   }
 
+  function getCartTotal() {
+    let total = 0;
+    document.querySelectorAll('tbody tr').forEach(row => {
+      const price = parseFloat(row.querySelector('td:nth-child(2)').textContent);
+      const qty = parseInt(row.querySelector('.qty-input').value);
+      total += price * qty;
+    });
+    return total;
+  }
+
+  function setupQuantityControls() {
+    document.querySelectorAll('.btn-increase').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const input = btn.parentElement.querySelector('.qty-input');
+        input.value = parseInt(input.value) + 1;
+        updateSubtotal(btn.closest('tr'));
+      });
+    });
+    document.querySelectorAll('.btn-decrease').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const input = btn.parentElement.querySelector('.qty-input');
+        if (parseInt(input.value) > 1) {
+          input.value = parseInt(input.value) - 1;
+          updateSubtotal(btn.closest('tr'));
+        }
+      });
+    });
+    document.querySelectorAll('.qty-input').forEach(input => {
+      input.addEventListener('change', () => {
+        if (parseInt(input.value) < 1) input.value = 1;
+        updateSubtotal(input.closest('tr'));
+      });
+    });
+  }
+
+  function updateSubtotal(row) {
+    const price = parseFloat(row.querySelector('td:nth-child(2)').textContent);
+    const qty = parseInt(row.querySelector('.qty-input').value);
+    const subtotalElem = row.querySelector('.subtotal');
+    subtotalElem.textContent = (price * qty).toFixed(2);
+    updateBillSummary(getCartTotal());
+  }
+
   document.getElementById('apply-coupon')?.addEventListener('click', function() {
     const code = document.getElementById('coupon-input').value.trim().toUpperCase();
     applyCoupon(code);
@@ -368,10 +416,38 @@
 
   document.addEventListener('DOMContentLoaded', function() {
     renderCoupons();
+    setupQuantityControls();
     const initialTotal = parseFloat("{{ total|default(0) }}") || 0;
     updateBillSummary(initialTotal);
   });
+
+function setupRemoveButtons() {
+    document.querySelectorAll('.btn-remove').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const row = btn.closest('tr');
+        const itemId = row.dataset.itemId;
+
+        // Remove the row from UI
+        row.remove();
+        updateBillSummary(getCartTotal());
+
+        // Optional: Update backend cart (Flask route)
+        try {
+          await fetch('{{ url_for("auth.api_remove_from_cart") }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ item_id: itemId })
+          });
+        } catch (err) {
+          console.error('Error removing item:', err);
+        }
+      });
+    });
+  }
+
+
 </script>
+
 
 </body>
 </html>
