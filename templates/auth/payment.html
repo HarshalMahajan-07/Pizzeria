@@ -5,36 +5,43 @@
   <title>Payment Gateway</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 text-gray-800">
+<body class="bg-gray-100 text-gray-800 flex items-center justify-center min-h-screen">
 
-<div class="max-w-xl mx-auto p-6 mt-10 bg-white shadow-xl rounded-xl">
-  <h2 class="text-2xl font-bold mb-6 text-center">🧾 Payment Gateway</h2>
+<div class="max-w-xl w-full p-6 bg-white shadow-2xl rounded-2xl">
+  <h2 class="text-3xl font-bold mb-6 text-center">🧾 Payment Gateway</h2>
 
   <!-- Tabs -->
   <div class="mb-6">
     <nav class="flex space-x-4 justify-center">
-      <button class="tab-button active-tab" data-target="card">💳 Card</button>
-      <button class="tab-button" data-target="upi">📱 UPI</button>
-      <button class="tab-button" data-target="wallet">👛 Wallet</button>
+      <button type="button" class="tab-button active-tab" data-target="card">💳 Card</button>
+      <button type="button" class="tab-button" data-target="upi">📱 UPI</button>
+      <button type="button" class="tab-button" data-target="wallet">👛 Wallet</button>
     </nav>
   </div>
 
   <!-- Tab Content -->
-  <form id="paymentForm" method="POST">
+  <form id="paymentForm" method="POST" class="space-y-4">
     <input type="hidden" name="method" id="method" value="card">
-    <div id="card" class="tab-content">
-      <input type="text" name="card_number" placeholder="Card Number" class="input-field">
+
+    <!-- Card -->
+    <div id="card" class="tab-content space-y-3">
+      <input type="text" name="card_number" placeholder="Card Number" class="input-field" maxlength="19">
+      <p class="text-sm text-red-500 hidden" id="cardError"></p>
       <div class="flex space-x-2">
-        <input type="text" name="expiry" placeholder="MM/YY" class="input-field w-1/2">
-        <input type="password" name="cvv" placeholder="CVV" class="input-field w-1/2">
+        <input type="text" name="expiry" placeholder="MM/YY" class="input-field w-1/2" maxlength="5">
+        <input type="password" name="cvv" placeholder="CVV" class="input-field w-1/2" maxlength="3">
       </div>
+      <p class="text-sm text-red-500 hidden" id="cvvError"></p>
       <input type="text" name="cardholder" placeholder="Cardholder Name" class="input-field">
     </div>
 
+    <!-- UPI -->
     <div id="upi" class="tab-content hidden">
       <input type="text" name="upi_id" placeholder="example@upi" class="input-field">
+      <p class="text-sm text-red-500 hidden" id="upiError"></p>
     </div>
 
+    <!-- Wallet -->
     <div id="wallet" class="tab-content hidden">
       <select name="wallet_type" class="input-field">
         <option>Paytm</option>
@@ -43,7 +50,7 @@
       </select>
     </div>
 
-    <button type="submit" class="mt-4 w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
+    <button type="submit" id="payBtn" class="mt-4 w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-all duration-200">
       Pay ₹{{ total_amount }}
     </button>
   </form>
@@ -53,13 +60,13 @@
 
 <!-- Modal -->
 <div id="confirmationModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-  <div class="bg-white rounded-lg p-6 max-w-md w-full shadow-lg text-center">
+  <div class="bg-white rounded-lg p-8 max-w-md w-full shadow-lg text-center">
     <h2 class="text-2xl font-bold text-green-600 mb-4">✅ Order Confirmed!</h2>
     <p class="mb-2">Order ID: <span id="orderId" class="font-semibold"></span></p>
     <p class="mb-2">Customer: <span id="userName"></span></p>
     <p class="mb-2">Delivering to: <span id="userAddress"></span></p>
-    <p class="mb-4 text-sm text-gray-600" id="orderItems"></p>
-    <button onclick="location.href='/customer/my-orders'" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+    <p class="mb-4 text-gray-700" id="orderItems"></p>
+    <button onclick="location.href='/customer/my-orders'" class="mt-4 bg-blue-500 text-white px-5 py-2 rounded-lg hover:bg-blue-600">
       Go to My Orders
     </button>
   </div>
@@ -77,22 +84,90 @@
     });
   });
 
-  // Handle form submission (AJAX-style for demo purposes)
+  // Luhn check for card number
+  function isValidCardNumber(num) {
+    num = num.replace(/\s+/g, '');
+    let sum = 0, shouldDouble = false;
+    for (let i = num.length - 1; i >= 0; i--) {
+      let digit = parseInt(num[i]);
+      if (shouldDouble) {
+        digit *= 2;
+        if (digit > 9) digit -= 9;
+      }
+      sum += digit;
+      shouldDouble = !shouldDouble;
+    }
+    return sum % 10 === 0;
+  }
+
+  // Validation
+  function validateForm(method) {
+    let valid = true;
+    document.getElementById('cardError').classList.add('hidden');
+    document.getElementById('cvvError').classList.add('hidden');
+    document.getElementById('upiError').classList.add('hidden');
+
+    if (method === 'card') {
+      const cardNum = document.querySelector('[name="card_number"]').value;
+      const expiry = document.querySelector('[name="expiry"]').value;
+      const cvv = document.querySelector('[name="cvv"]').value;
+
+      if (!isValidCardNumber(cardNum)) {
+        document.getElementById('cardError').innerText = 'Invalid card number';
+        document.getElementById('cardError').classList.remove('hidden');
+        valid = false;
+      }
+      if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(expiry)) {
+        alert('Invalid expiry date (MM/YY)');
+        valid = false;
+      }
+      if (!/^[0-9]{3}$/.test(cvv)) {
+        document.getElementById('cvvError').innerText = 'Invalid CVV';
+        document.getElementById('cvvError').classList.remove('hidden');
+        valid = false;
+      }
+    } 
+    else if (method === 'upi') {
+      const upi = document.querySelector('[name="upi_id"]').value;
+      if (!/^[\w.-]+@[\w.-]+$/.test(upi)) {
+        document.getElementById('upiError').innerText = 'Invalid UPI ID';
+        document.getElementById('upiError').classList.remove('hidden');
+        valid = false;
+      }
+    }
+    return valid;
+  }
+
+  // Handle form submission
   document.getElementById('paymentForm').addEventListener('submit', async function (e) {
     e.preventDefault();
-    const form = e.target;
-    const formData = new FormData(form);
-    const response = await fetch('/place-order', {
-      method: 'POST',
-      body: formData
-    });
-    const data = await response.json();
-    if (data.success) {
-      document.getElementById('orderId').innerText = data.order_id;
-      document.getElementById('userName').innerText = data.name;
-      document.getElementById('userAddress').innerText = data.address;
-      document.getElementById('orderItems').innerText = `🧀 ${data.items}`;
-      document.getElementById('confirmationModal').classList.remove('hidden');
+    const method = document.getElementById('method').value;
+    if (!validateForm(method)) return;
+
+    const btn = document.getElementById('payBtn');
+    btn.innerText = 'Processing...';
+    btn.disabled = true;
+
+    try {
+      const formData = new FormData(this);
+      const response = await fetch('/place-order', { method: 'POST', body: formData });
+      const data = await response.json();
+      btn.innerText = 'Pay ₹{{ total_amount }}';
+      btn.disabled = false;
+
+      if (data.success) {
+        document.getElementById('orderId').innerText = data.order_id;
+        document.getElementById('userName').innerText = data.name;
+        document.getElementById('userAddress').innerText = data.address;
+        document.getElementById('orderItems').innerText = `🧀 ${data.items}`;
+        const modal = document.getElementById('confirmationModal');
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+      }
+    } catch (error) {
+      alert("Error processing payment.");
+      btn.innerText = 'Pay ₹{{ total_amount }}';
+      btn.disabled = false;
     }
   });
 </script>
@@ -105,6 +180,7 @@
     border-radius: 0.5rem;
     cursor: pointer;
     font-weight: 500;
+    transition: all 0.2s;
   }
   .active-tab {
     background-color: #3b82f6;
@@ -116,7 +192,7 @@
     padding: 0.6rem;
     border: 1px solid #ccc;
     border-radius: 0.5rem;
-    margin-bottom: 1rem;
+    margin-bottom: 0.3rem;
   }
 </style>
 

@@ -60,6 +60,60 @@
       color: #007bff;
       padding-top: 10px;
     }
+    /* Coupon Cards - Swiggy/Zomato style */
+    .coupon-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border: 2px dashed #ff6d00;
+      background: #fffaf2;
+      border-radius: 10px;
+      padding: 12px 15px;
+      margin-bottom: 12px;
+      transition: 0.3s ease;
+    }
+    .coupon-card:hover {
+      background: #fff4e6;
+      transform: translateY(-2px);
+    }
+    .coupon-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .coupon-icon {
+      font-size: 1.8rem;
+      color: solid #007bff;
+    }
+    .coupon-details {
+      line-height: 1.2;
+    }
+    .coupon-code {
+      font-weight: bold;
+      font-size: 1rem;
+      color: #333;
+    }
+    .coupon-desc {
+      font-size: 0.9rem;
+      color: #666;
+    }
+    .apply-btn {
+      background: #ff6d00;
+      color: white;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .apply-btn:hover {
+      background: #007bff;
+    }
+    .apply-btn.active {
+      background: #28a745 !important;
+    }
   </style>
 </head>
 <body class="bg-light">
@@ -88,12 +142,7 @@
                 <td>
                   <div class="qty-controls">
                     <button type="button" class="btn-decrease">-</button>
-                    <input 
-                      type="number" 
-                      value="{{ item.quantity }}" 
-                      min="1" 
-                      class="qty-input"
-                    />
+                    <input type="number" value="{{ item.quantity }}" min="1" class="qty-input" />
                     <button type="button" class="btn-increase">+</button>
                   </div>
                 </td>
@@ -163,52 +212,51 @@
             <span>₹<span id="bill-subtotal">{{ total|round(2) }}</span></span>
           </div>
           
-         {% if total > 0 %}
-  <div class="bill-row">
-    <span>Delivery Fee</span>
-    <span>₹<span id="delivery-fee">40</span></span>
-  </div>
-
-  <div class="bill-row">
-    <span>Taxes & Charges</span>
-    <span>₹<span id="taxes">{{ (total * 0.05)|round(2) }}</span></span>
-  </div>
-
-  <div class="bill-row text-success">
-    <span>Discount Applied</span>
-    <span>-₹<span id="discount">0</span></span>
-  </div>
-
-  <hr>
-
-  <div class="bill-row bill-total">
-    <span>Grand Total</span>
-    <span>₹<span id="grand-total">{{ (total + 40 + (total * 0.05))|round(2) }}</span></span>
-  </div>
-{% else %}
-  <div class="alert alert-info mt-3">No items in cart.</div>
-{% endif %}
-
-          <div class="mt-4">
-            <div class="input-group mb-3">
-              <input type="text" class="form-control" placeholder="Coupon Code" id="coupon-input">
-              <button class="btn btn-outline-secondary" type="button" id="apply-coupon">Apply</button>
-            </div>
+          <div class="bill-row">
+            <span>Delivery Fee</span>
+            <span>₹<span id="delivery-fee">40</span></span>
           </div>
-          
-          <div class="d-grid gap-2">
-          
-              <a href="{{ url_for('auth.payment_gateway') }}" class="btn btn-success btn-lg">
+
+          <div class="bill-row">
+            <span>Taxes & Charges</span>
+            <span>₹<span id="taxes">{{ (total * 0.05)|round(2) }}</span></span>
+          </div>
+
+          <div class="bill-row text-success">
+            <span>Discount Applied</span>
+            <span>-₹<span id="discount">0</span></span>
+          </div>
+
+          <hr>
+
+          <div class="bill-row bill-total">
+            <span>Grand Total</span>
+            <span>₹<span id="grand-total">{{ (total + 40 + (total * 0.05))|round(2) }}</span></span>
+          </div>
+
+          <!-- Coupons Section -->
+          <div class="mt-4">
+            <h5>🎁 Available Coupons</h5>
+            <div id="coupon-list"></div>
+          </div>
+
+          <!-- Manual Coupon Input -->
+          <div class="input-group mt-3">
+            <input type="text" class="form-control" placeholder="Enter coupon code" id="coupon-input">
+            <button class="btn btn-outline-secondary" type="button" id="apply-coupon">Apply</button>
+          </div>
+
+          <div class="d-grid gap-2 mt-4">
+            <a href="{{ url_for('auth.payment_gateway') }}" class="btn btn-success btn-lg">
               🛒 Proceed to Checkout
-              </a>
-            </button>
+            </a>
             <div class="text-center">
               <small class="text-muted">
                 💰 You'll save ₹25 on your next order!
               </small>
             </div>
           </div>
-          
+
           <div class="mt-3">
             <small class="text-muted">
               <strong>Delivery Time:</strong> 25-30 minutes<br>
@@ -222,116 +270,79 @@
   </div>
 
 <script>
-  // Existing cart functionality (unchanged)
-  function debounce(func, delay) {
-    let timer;
-    return function(...args) {
-      clearTimeout(timer);
-      timer = setTimeout(() => func.apply(this, args), delay);
-    };
+  const coupons = {
+    "SAVE20": { type: "flat", value: 20, description: "₹20 off your order", icon: "💰" },
+    "PIZZA50": { type: "percent", value: 50, description: "50% off on all pizzas", icon: "🍕" },
+    "FREESHIP": { type: "flat", value: 40, description: "Free delivery on your order", icon: "🚚" }
+  };
+  let appliedCoupon = null;
+
+  function renderCoupons() {
+    const list = document.getElementById("coupon-list");
+    list.innerHTML = "";
+    for (const code in coupons) {
+      const c = coupons[code];
+      const card = document.createElement("div");
+      card.className = "coupon-card";
+      card.innerHTML = `
+        <div class="coupon-info">
+          <div class="coupon-icon">${c.icon}</div>
+          <div class="coupon-details">
+            <div class="coupon-code">${code}</div>
+            <div class="coupon-desc">${c.description}</div>
+          </div>
+        </div>
+        <button class="apply-btn" data-code="${code}">APPLY</button>
+      `;
+      list.appendChild(card);
+    }
+    document.querySelectorAll(".apply-btn").forEach(btn => {
+      btn.addEventListener("click", function() {
+        applyCoupon(this.dataset.code);
+      });
+    });
   }
 
-  async function updateQuantity(itemId, quantity, row) {
-    if (quantity < 1) quantity = 1;
+  function calculateDiscount(itemTotal) {
+    if (!appliedCoupon) return 0;
+    const coupon = coupons[appliedCoupon];
+    if (coupon.type === "flat") return Math.min(coupon.value, itemTotal);
+    else if (coupon.type === "percent") return (itemTotal * coupon.value) / 100;
+    return 0;
+  }
 
-    try {
-      const res = await fetch('{{ url_for("auth.api_update_cart_quantity") }}', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ item_id: itemId, quantity: quantity })
-      });
+  function updateBillSummary(itemTotal) {
+    let deliveryFee = itemTotal > 0 ? 40 : 0;
+    if (appliedCoupon === "FREESHIP") deliveryFee = 0;
+    const taxes = itemTotal > 0 ? (itemTotal * 0.05) : 0;
+    const discount = calculateDiscount(itemTotal);
+    let grandTotal = itemTotal + deliveryFee + taxes - discount;
+    if (grandTotal < 0) grandTotal = 0;
 
-      const data = await res.json();
-      if (data.success) {
-        row.querySelector('.subtotal').textContent = data.subtotal.toFixed(2);
-        document.getElementById('total-amount').textContent = data.total.toFixed(2);
-        
-        // Update bill summary
-        updateBillSummary(data.total);
-      } else {
-        alert(data.message || 'Error updating cart');
-      }
-    } catch (err) {
-      alert('Network error updating cart');
-      console.error(err);
+    document.getElementById('bill-subtotal').textContent = itemTotal.toFixed(2);
+    document.getElementById('taxes').textContent = taxes.toFixed(2);
+    document.getElementById('delivery-fee').textContent = deliveryFee.toFixed(2);
+    document.getElementById('discount').textContent = discount.toFixed(2);
+    document.getElementById('grand-total').textContent = grandTotal.toFixed(2);
+
+    updateSessionGrandTotal(grandTotal);
+  }
+
+  function applyCoupon(code) {
+    if (coupons[code]) {
+      appliedCoupon = code;
+      const currentTotal = parseFloat(document.getElementById('bill-subtotal').textContent);
+      updateBillSummary(currentTotal);
+
+      document.querySelectorAll(".apply-btn").forEach(btn => btn.classList.remove("active"));
+      document.querySelector(`.apply-btn[data-code="${code}"]`).classList.add("active");
+
+      alert(`Coupon Applied: ${coupons[code].description}`);
+    } else {
+      alert("Invalid coupon");
     }
   }
 
-  document.querySelectorAll('tr[data-item-id]').forEach(row => {
-    const itemId = row.getAttribute('data-item-id');
-    const input = row.querySelector('.qty-input');
-    const btnDec = row.querySelector('.btn-decrease');
-    const btnInc = row.querySelector('.btn-increase');
-
-    const debouncedUpdate = debounce(() => {
-      const qty = parseInt(input.value) || 1;
-      updateQuantity(itemId, qty, row);
-    }, 500);
-
-    btnDec.addEventListener('click', () => {
-      let qty = parseInt(input.value) || 1;
-      if (qty > 1) {
-        input.value = qty - 1;
-        updateQuantity(itemId, qty - 1, row);
-      }
-    });
-
-    btnInc.addEventListener('click', () => {
-      let qty = parseInt(input.value) || 1;
-      input.value = qty + 1;
-      updateQuantity(itemId, qty + 1, row);
-    });
-
-    input.addEventListener('input', () => {
-      if (parseInt(input.value) < 1) input.value = 1;
-      debouncedUpdate();
-    });
-  });
-
-  document.querySelectorAll('.btn-remove').forEach(button => {
-    button.addEventListener('click', async (e) => {
-      const row = e.target.closest('tr');
-      const itemId = row.getAttribute('data-item-id');
-
-      if (!confirm('Remove this item from cart?')) return;
-
-      try {
-        const res = await fetch('{{ url_for("auth.api_remove_from_cart") }}', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({ item_id: itemId })
-        });
-        const data = await res.json();
-
-        if (data.success) {
-          row.remove();
-          document.getElementById('total-amount').textContent = data.total.toFixed(2);
-          
-          // Update bill summary
-          updateBillSummary(data.total);
-
-          const tbody = document.querySelector('tbody');
-          if (!tbody.querySelector('tr')) {
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center">Your cart is empty.</td></tr>';
-          }
-        } else {
-          alert(data.message || 'Failed to remove item');
-        }
-      } catch (err) {
-        alert('Network error');
-        console.error(err);
-      }
-    });
-  });
-
-  // New UI functionality
-  function selectAddress(element) {
-    document.querySelectorAll('.address-card').forEach(card => {
-      card.classList.remove('selected');
-    });
-    element.classList.add('selected');
-    element.querySelector('input[type="radio"]').checked = true;
-  }
   async function updateSessionGrandTotal(grandTotal) {
     try {
       await fetch('{{ url_for("auth.api_set_grand_total") }}', {
@@ -344,40 +355,19 @@
     }
   }
 
-  //update bill summary
-  function updateBillSummary(itemTotal) {
-    const deliveryFee = itemTotal > 0 ? 40 : 0;
-    const taxes = itemTotal > 0 ? (itemTotal * 0.05) : 0;
-    const discount = parseFloat(document.getElementById('discount')?.textContent || '0');
-    let grandTotal = itemTotal + deliveryFee + taxes - discount;
-    if (grandTotal < 0) grandTotal = 0;
-
-    // Update UI
-    document.getElementById('bill-subtotal').textContent = itemTotal.toFixed(2);
-    document.getElementById('taxes').textContent = taxes.toFixed(2);
-    document.getElementById('delivery-fee').textContent = deliveryFee.toFixed(2);
-    document.getElementById('grand-total').textContent = grandTotal.toFixed(2);
-    
-    // Update session with new grand total
-    updateSessionGrandTotal(grandTotal);
+  function selectAddress(element) {
+    document.querySelectorAll('.address-card').forEach(card => card.classList.remove('selected'));
+    element.classList.add('selected');
+    element.querySelector('input[type="radio"]').checked = true;
   }
 
-
-  // Coupon functionality
-    document.getElementById('apply-coupon')?.addEventListener('click', async function() {
-    const couponCode = document.getElementById('coupon-input').value.trim();
-    if (couponCode.toUpperCase() === 'SAVE20') {
-      document.getElementById('discount').textContent = '20';
-      const currentTotal = parseFloat(document.getElementById('bill-subtotal').textContent);
-      updateBillSummary(currentTotal);
-      alert('Coupon applied successfully! ₹20 discount added.');
-    } else if (couponCode) {
-      alert('Invalid coupon code');
-    }
+  document.getElementById('apply-coupon')?.addEventListener('click', function() {
+    const code = document.getElementById('coupon-input').value.trim().toUpperCase();
+    applyCoupon(code);
   });
 
-  // Initialize bill summary on page load
   document.addEventListener('DOMContentLoaded', function() {
+    renderCoupons();
     const initialTotal = parseFloat("{{ total|default(0) }}") || 0;
     updateBillSummary(initialTotal);
   });

@@ -611,9 +611,11 @@
   <section class="max-w-7xl mx-auto mt-8 px-4">
     <div class="section-title">
       <h3>What are you craving for?</h3>
-      <a href="#" class="view-all">
-        View all <i class="fas fa-chevron-right ml-1 text-xs"></i>
-      </a>
+      <form method="get" action="{{ url_for('auth.category_products', category_name='Big Pizza') }}">
+        <button type="submit" class="view-all">
+          View all <i class="fas fa-chevron-right ml-1 text-xs"></i>
+        </button>
+      </form>
     </div>
     
     <div class="scroll-container">
@@ -634,7 +636,16 @@
     ('BBQ Chicken', 'photo-1620374645498-af6bd681a0bd')
   ] %}
   {% for name, img_id in categories %}
-  <a href="{{ url_for('auth.category_products', category_name=name) }}" class="category-card">
+  {% set pizza_categories = ['Big Pizza', 'Cheese Burst', 'Veg Pizza', 'Pizza Mania', 'Cheese Volcano', 'Spicy Pizza', 'Pepperoni', 'BBQ Chicken'] %}
+  {% if name == 'Beverages' %}
+    <a href="{{ url_for('auth.category_products', category_name='Beverages') }}" class="category-card">
+  {% elif name == 'Garlic Breads' %}
+    <a href="{{ url_for('auth.category_products', category_name='breads') }}" class="category-card">
+  {% elif name in pizza_categories %}
+    <a href="{{ url_for('auth.category_products', category_name='Pizza') }}" class="category-card">
+  {% else %}
+    <a href="{{ url_for('auth.category_products', category_name=name) }}" class="category-card">
+  {% endif %}
     <div class="category-bg" style="background-image: url('https://images.unsplash.com/{{ img_id }}?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80')"></div>
     <div class="category-overlay"></div>
     <div class="category-content">
@@ -653,9 +664,11 @@
   <section class="max-w-7xl mx-auto mt-8 px-4">
     <div class="section-title">
       <h3>Special Offers</h3>
-      <a href="#" class="view-all">
-        View all <i class="fas fa-chevron-right ml-1 text-xs"></i>
-      </a>
+     <form method="get" action="{{ url_for('auth.category_products', category_name='Big Pizza') }}">
+        <button type="submit" class="view-all">
+          View all <i class="fas fa-chevron-right ml-1 text-xs"></i>
+        </button>
+      </form>
     </div>
       <div class="scroll-container">
       <div class="scroll-btn scroll-left" onclick="scrollPrev('promo-banners')">
@@ -777,5 +790,51 @@
   });
 </script>
 
+
+<footer class="text-white mt-16 pt-10 pb-6 shadow-2xl" style="background: linear-gradient(135deg, #2c3e50, #1a2530);">
+  <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
+    <!-- Brand & Contact Info -->
+    <div class="flex flex-col items-start">
+      <div class="flex items-center gap-3 mb-2">
+        <span class="bg-white bg-opacity-20 rounded-full p-3">
+          <i class="fas fa-pizza-slice text-2xl"></i>
+        </span>
+        <span class="font-bold text-2xl tracking-wide">PIZZERIA</span>
+      </div>
+      <p class="text-sm mb-2">Serving smiles by the slice.</p>
+      <div class="flex items-center gap-2 text-sm">
+        <i class="fas fa-phone-alt"></i>
+        <span>+91 90289 90437</span>
+      </div>
+      <div class="flex items-center gap-2 text-sm mt-1">
+        <i class="fas fa-envelope"></i>
+        <span>contact@pizzeria.com</span>
+      </div>
+      <div class="flex items-center gap-2 text-sm mt-1">
+        <i class="fas fa-map-marker-alt"></i>
+        <span>123 Pizza Street, Nasik, Maharashtra, India</span>
+      </div>
+    </div>
+    <!-- Social Media Links -->
+    <div class="flex flex-col items-center md:items-end gap-3">
+      <span class="font-semibold text-lg mb-2">Follow Us</span>
+      <div class="flex gap-4">
+        <a href="https://facebook.com" target="_blank" class="hover:text-blue-200 transition">
+          <i class="fab fa-facebook-f text-xl"></i>
+        </a>
+        <a href="https://instagram.com" target="_blank" class="hover:text-pink-200 transition">
+          <i class="fab fa-instagram text-xl"></i>
+        </a>
+        <a href="https://twitter.com" target="_blank" class="hover:text-blue-300 transition">
+          <i class="fab fa-twitter text-xl"></i>
+        </a>
+        <a href="https://youtube.com" target="_blank" class="hover:text-red-200 transition">
+          <i class="fab fa-youtube text-xl"></i>
+        </a>
+      </div>
+      <span class="text-xs mt-4 opacity-80">&copy; 2025 Pizzeria. All rights reserved.</span>
+    </div>
+  </div>
+</footer>
 </body>
 </html>

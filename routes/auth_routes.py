@@ -455,6 +455,7 @@ def place_order():
         'user_id': customer['_id'],
         'name': customer['name'],
         'address': customer['address'],
+        'phone': customer['phone'],
         'items': order_items,
         'total_amount': grand_total,
         'payment_method': request.form.get('method'),
@@ -463,7 +464,7 @@ def place_order():
 
     result = db.orders.insert_one(order)
 
-    # Clear cart after order
+#-------------- Clear cart after order-------------------------
     session.pop('cart', None)
 
     item_summary = ", ".join([f"{i['name']} × {i['quantity']}" for i in order_items])

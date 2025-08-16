@@ -3,57 +3,83 @@
 <head>
   <meta charset="UTF-8" />
   <title>My Orders</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-red-50 text-gray-800 font-sans">
+<body class="bg-red-50 text-gray-800 font-sans antialiased">
 
   <div class="max-w-5xl mx-auto px-4 py-10">
-    <h1 class="text-4xl font-bold text-center text-red-600 mb-10">🍕 My Orders</h1>
 
     {% if orders %}
-      <div class="space-y-6">
-        {% for order in orders %}
-        <div class="bg-white shadow-md rounded-xl border border-red-200 p-6">
-          <div class="flex justify-between items-center mb-4">
-            <div>
-              <h2 class="text-xl font-semibold text-red-700">Order #{{ order._id }}</h2>
-              <p class="text-sm text-gray-500">
-                        Placed on {{ order.placed_at.strftime('%d %b %Y, %I:%M %p') }}
-                        </p>
-            </div>
-            <span class="px-3 py-1 bg-green-100 text-green-700 text-sm font-medium rounded-full">{{ order.status }}</span>
-          </div>
+    <!-- Title + Back button in same row -->
+    <div class="flex items-center justify-between mb-8">
+      <a href="{{ url_for('auth.customer_profile') }}"
+         class="inline-flex items-center gap-2 px-4 py-2 rounded-lg shadow-sm bg-red-600 hover:bg-red-700 text-white text-sm font-medium transition">
+        <svg class="w-4 h-4 -ml-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+        Back
+      </a>
 
-          <div class="grid md:grid-cols-2 gap-4 text-sm">
-            <div>
-              <h3 class="font-semibold text-red-500 mb-1">Items Ordered</h3>
-              <ul class="list-disc list-inside text-gray-700">
-                {% for item in order['items'] %}
-                  <li>{{ item.name }} × {{ item.quantity }}</li>
-                {% endfor %}
-              </ul>
-            </div>
-            <div>
-              <h3 class="font-semibold text-red-500 mb-1">Delivery Details</h3>
-              <p>{{ order.name }}</p>
-              <p>{{ order.address.street }}, {{ order.address.city }}</p>
-              <p>{{ order.address.state }} - {{ order.address.pincode }}</p>
-              <p>{{ order.address.phone }}</p>
-            </div>
-          </div>
+      <h1 class="text-3xl sm:text-4xl font-extrabold text-red-600 flex-1 text-center">🍕 My Orders</h1>
 
-          <div class="mt-4 flex justify-between text-base font-semibold">
-            <span class="text-red-600">Total: ₹{{ order.total_amount }}</span>
-            <span class="text-gray-500">Payment: {{ order.payment_method|capitalize }}</span>
+      <div class="w-20 h-8"></div> <!-- Balancer -->
+    </div>
+
+    <!-- Orders -->
+    <div class="space-y-6">
+      {% for order in orders %}
+      <div class="bg-white border border-red-100 shadow-sm rounded-2xl overflow-hidden p-6">
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+          <div>
+            <h2 class="text-lg font-semibold text-red-700">Order #{{ order._id }}</h2>
+            <p class="mt-1 text-xs text-gray-500">
+              Placed on {{ order.placed_at.strftime('%d %b %Y, %I:%M %p') }}
+            </p>
+          </div>
+          <span class="px-3 py-1 bg-green-100 text-green-700 text-sm font-medium rounded-full">📍Delivered</span>
+        </div>
+
+        <!-- Content grid -->
+        <div class="grid md:grid-cols-2 gap-6 text-sm">
+          <div>
+            <h3 class="text-sm font-semibold text-red-500 mb-2">Items Ordered</h3>
+            <ul class="space-y-2">
+              {% for item in order['items'] %}
+                <li class="bg-red-50 border border-red-100 rounded-lg px-3 py-2">
+                  {{ item.name|capitalize }} × {{ item.quantity }}
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+          <div>
+            <h3 class="text-sm font-semibold text-red-500 mb-2">Delivery Details</h3>
+            <p class="text-gray-800 font-medium">{{ order.name|capitalize }}</p>
+            <p class="text-gray-600">{{ order.address.street }}, {{ order.address.city|capitalize }}</p>
+            <p class="text-gray-600">{{ order.address.state|capitalize }} - {{ order.address.pincode }}</p>
+            <p class="text-gray-600 mt-1">📞 +91{{ order.phone }}</p>
           </div>
         </div>
-        {% endfor %}
+
+        <!-- Footer -->
+        <div class="mt-6 flex justify-between items-center text-base font-semibold">
+          <span class="text-red-600">Total: ₹{{ order.total_amount }}</span>
+          <span class="text-gray-500">Payment: {{ order.payment_method|capitalize }}</span>
+        </div>
       </div>
+      {% endfor %}
+    </div>
+
     {% else %}
-      <div class="text-center text-gray-600 mt-20">
-        <p class="text-xl">You haven’t placed any orders yet.</p>
-        <a href="{{ url_for('auth.customer_dashboard') }}" class="mt-4 inline-block text-red-600 font-medium hover:underline">Browse Pizzas →</a>
-      </div>
+    <!-- Empty state -->
+    <div class="text-center text-gray-600 mt-20">
+      <p class="text-xl">You haven’t placed any orders yet.</p>
+      <a href="{{ url_for('auth.customer_dashboard') }}"
+         class="mt-4 inline-block text-red-600 font-medium hover:underline">
+        Browse Pizzas →
+      </a>
+    </div>
     {% endif %}
   </div>
 
