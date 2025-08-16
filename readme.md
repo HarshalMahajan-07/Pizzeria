@@ -61,14 +61,13 @@ pizza-ordering-system/
 
 ````
 ## Screenshots
-
-
+<img width="1919" height="910" alt="Screenshot 2025-08-16 094952" src="https://github.com/user-attachments/assets/800cb131-0a29-43ca-81d2-6a23740727f7" />
 <img width="1896" height="864" alt="Screenshot 2025-08-03 162139" src="https://github.com/user-attachments/assets/4fb81851-3781-4bf6-a3b7-d3980f84b105" />
 <img width="1895" height="866" alt="Screenshot 2025-08-03 162241" src="https://github.com/user-attachments/assets/dba9b221-74cb-4598-8740-12eb879f5bbf" />
 <img width="1917" height="911" alt="Screenshot 2025-08-16 095331" src="https://github.com/user-attachments/assets/119fe83b-7fd9-4a41-999f-f3f966c84b4e" />
 <img width="1917" height="909" alt="Screenshot 2025-08-16 095418" src="https://github.com/user-attachments/assets/9d9b5471-8cde-4d1b-9360-e6e88eddc3b9" />
 <img width="1914" height="911" alt="Screenshot 2025-08-16 095447" src="https://github.com/user-attachments/assets/d90cf6e0-012a-49b7-b67d-78eed1eecd29" />
-<img width="1901" height="905" alt="Screenshot 2025-08-16 095800" src="https://github.com/user-attachments/assets/fec3f3bf-2b60-4b58-b8e4-0d0d04a4ea0f" />
+<img width="1898" height="911" alt="Screenshot 2025-08-16 095530" src="https://github.com/user-attachments/assets/f0cc7637-c3b1-4c9d-ad62-2f43cf2302b6" />
 
 ## 🛠️ Setup Instructions
 
