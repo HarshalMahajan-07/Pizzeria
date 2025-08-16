@@ -60,6 +60,10 @@ pizza-ordering-system/
 └── static/                       # Assets (CSS/JS/Images)
 
 ````
+## Screenshots
+
+
+<img width="1896" height="864" alt="Screenshot 2025-08-03 162139" src="https://github.com/user-attachments/assets/4fb81851-3781-4bf6-a3b7-d3980f84b105" />
 
 ## 🛠️ Setup Instructions
 
